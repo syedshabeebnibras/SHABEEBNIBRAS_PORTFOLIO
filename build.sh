@@ -1,21 +1,24 @@
 #!/usr/bin/env bash
-# Vercel build script — bootstraps the Rust toolchain (if not already present)
-# and Trunk, then builds the WASM bundle.
+# Vercel build script — bootstraps Rust toolchain (if missing) and Trunk,
+# then builds the release WASM bundle.
 #
-# Vercel's build image ships with Rust pre-installed at /rust/bin, so we
-# detect that and skip the rustup install in that case. Locally / on other
-# CI systems without Rust we run the installer.
+# Vercel's build image ships Rust pre-installed at /rust/bin but it is NOT
+# on PATH by default. We have to source /rust/env first to expose rustup,
+# THEN decide whether an install is needed.
 
 set -euo pipefail
 
 TRUNK_VERSION=0.21.5
 
-# ─── 1) Rust toolchain ─────────────────────────────────────────────────────
+# ─── 0) source any existing rust env BEFORE checking command -v ─────────
+# /rust/env       → vercel's build image
+# $HOME/.cargo/env → standard rustup install
+[ -f /rust/env ] && . /rust/env
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+
+# ─── 1) Rust toolchain ──────────────────────────────────────────────────
 if command -v rustup >/dev/null 2>&1; then
-  echo "[1/4] rust already installed: $(rustup --version 2>/dev/null || rustc --version)"
-  # source whatever env files exist so PATH is set up correctly
-  [ -f /rust/env ] && . /rust/env
-  [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+  echo "[1/4] rust already installed: $(rustup --version 2>/dev/null || true)"
 else
   echo "[1/4] installing rustup (silent)..."
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |
@@ -23,11 +26,11 @@ else
   . "$HOME/.cargo/env"
 fi
 
-# ─── 2) wasm32 target ──────────────────────────────────────────────────────
+# ─── 2) wasm32 target ───────────────────────────────────────────────────
 echo "[2/4] adding wasm32-unknown-unknown target..."
 rustup target add wasm32-unknown-unknown
 
-# ─── 3) Trunk (prebuilt binary into ./bin) ─────────────────────────────────
+# ─── 3) Trunk (prebuilt) ────────────────────────────────────────────────
 echo "[3/4] installing trunk ${TRUNK_VERSION} (prebuilt)..."
 mkdir -p ./bin
 curl -sSL \
@@ -37,7 +40,7 @@ chmod +x ./bin/trunk
 export PATH="$PWD/bin:$PATH"
 trunk --version
 
-# ─── 4) build ──────────────────────────────────────────────────────────────
+# ─── 4) build ───────────────────────────────────────────────────────────
 echo "[4/4] building release wasm bundle..."
 trunk build --release
 

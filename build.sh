@@ -31,10 +31,12 @@ echo "[2/4] adding wasm32-unknown-unknown target..."
 rustup target add wasm32-unknown-unknown
 
 # ─── 3) Trunk (prebuilt) ────────────────────────────────────────────────
-echo "[3/4] installing trunk ${TRUNK_VERSION} (prebuilt)..."
+echo "[3/4] installing trunk ${TRUNK_VERSION} (prebuilt, musl-static)..."
 mkdir -p ./bin
+# musl variant is statically linked — works on any linux regardless of
+# glibc version (vercel's image ships an older glibc)
 curl -sSL \
-  "https://github.com/trunk-rs/trunk/releases/download/v${TRUNK_VERSION}/trunk-x86_64-unknown-linux-gnu.tar.gz" |
+  "https://github.com/trunk-rs/trunk/releases/download/v${TRUNK_VERSION}/trunk-x86_64-unknown-linux-musl.tar.gz" |
   tar -xz -C ./bin
 chmod +x ./bin/trunk
 export PATH="$PWD/bin:$PATH"

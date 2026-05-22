@@ -1,0 +1,934 @@
+/* =========================================================================
+   perm_portfolio — warm editorial · minimal · calm
+   ========================================================================= */
+
+:root {
+  /* warm cream palette */
+  --bg-0:        #f3ece1;          /* primary cream */
+  --bg-1:        #ece4d6;          /* deeper cream for surfaces */
+  --bg-2:        #e3d9c7;
+  --surface-1:   rgba(46, 32, 22, 0.035);
+  --surface-2:   rgba(46, 32, 22, 0.06);
+  --line:        rgba(46, 32, 22, 0.10);
+  --line-bright: rgba(46, 32, 22, 0.18);
+
+  /* warm dark foreground */
+  --fg-0:        #221a13;          /* near-black, warm */
+  --fg-1:        #4a3a2c;          /* body copy */
+  --fg-2:        #7a6a58;          /* muted */
+  --fg-3:        #a89884;          /* very muted */
+
+  /* warm accents — no neon */
+  --accent:      #c97b5a;          /* terracotta — primary */
+  --accent-soft: #d8a47f;          /* lighter terracotta */
+  --accent-amber:#caa15a;          /* warm amber for upcoming */
+  --accent-sage: #7a8a6a;          /* sage green for live */
+  --accent-rose: #b07a7a;          /* dusty rose */
+
+  /* type */
+  --font-serif: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans:  "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono:  "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* timing — slower, gentler */
+  --ease:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.55, 0.06, 0.5, 0.4);
+
+  /* layout */
+  --gutter: clamp(1.5rem, 5vw, 5rem);
+  --max:    1100px;
+}
+
+/* -------------------------------------------------------------------------
+   reset-ish
+   ------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg-0);
+  color: var(--fg-0);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+button { all: unset; cursor: pointer; }
+img, video { display: block; max-width: 100%; }
+
+::selection { background: var(--accent-soft); color: var(--fg-0); }
+
+/* subtle warm noise texture — replaces the old WebGL plasma */
+body::before {
+  content: "";
+  position: fixed; inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 60% at 80% 0%, rgba(201, 123, 90, 0.10), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 0% 100%, rgba(122, 138, 106, 0.08), transparent 60%);
+}
+
+main.root {
+  position: relative;
+  z-index: 1;
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 var(--gutter) 8rem;
+}
+
+/* -------------------------------------------------------------------------
+   status bar (now a soft, quiet header strip)
+   ------------------------------------------------------------------------- */
+.statusbar {
+  position: sticky; top: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 1rem;
+  padding: 0.85rem var(--gutter);
+  background: rgba(243, 236, 225, 0.78);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--fg-2);
+  letter-spacing: 0.04em;
+}
+.statusbar__cell { display: flex; align-items: center; gap: 0.55rem; }
+.statusbar__cell--mid { justify-content: center; color: var(--fg-1); }
+.statusbar__cell:last-child { justify-content: flex-end; }
+
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--fg-3);
+}
+.dot--live { background: var(--accent-sage); }
+.muted { color: var(--fg-3); }
+.mono  { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.small { font-size: 12px; }
+
+/* -------------------------------------------------------------------------
+   hero
+   ------------------------------------------------------------------------- */
+.hero {
+  position: relative;
+  padding: clamp(6rem, 18vh, 10rem) 0 clamp(4rem, 10vh, 7rem);
+  display: grid; gap: 1.6rem;
+}
+.hero__meta {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.35rem, 2.2vw, 1.95rem);
+  color: var(--accent);          /* terracotta — matches "Nibras" + "llm systems" */
+  letter-spacing: -0.005em;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.hero__name {
+  position: relative;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-variation-settings: "opsz" 144, "SOFT" 50;
+  font-size: clamp(2.4rem, 8vw, 6.5rem);   /* sized for the full name */
+  line-height: 1.0;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  margin: 0;
+  color: var(--fg-0);
+  display: inline-block;
+  outline: none;
+  cursor: default;
+}
+.hero__name .surname {
+  font-weight: 500;
+  color: var(--accent);
+  display: inline-block;
+  padding-left: 0.04em;
+  transition: color 0.5s var(--ease);
+}
+.hero__name:hover .surname,
+.hero__name:focus-visible .surname { color: #b06641; }
+
+/* ── linkedin popover (clickable card with a clean LinkedIn logo) ────── */
+.name-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 1.25rem;
+  z-index: 20;
+
+  /* reset inherited h1 type — this popover lives inside the huge hero name
+     so we have to undo the heading's font scale */
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: normal;
+  line-height: 1.4;
+  color: var(--fg-1);
+  text-decoration: none;
+
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.7rem;
+
+  /* sized for the large-vertical LinkedIn badge (~280×354) plus padding */
+  width: 320px;
+  max-width: 92vw;
+  padding: 1rem 1.1rem 1.1rem;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px -28px rgba(46, 32, 22, 0.25);
+  overflow: hidden;
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px) scale(0.985);
+  transform-origin: 12% top;
+  transition:
+    opacity 0.45s var(--ease),
+    transform 0.55s var(--ease),
+    visibility 0s linear 0.45s;        /* hide AFTER the fade-out finishes */
+}
+
+/* invisible bridge — extends the popover's hover hit-area up into the gap,
+   so moving the cursor name → popover doesn't drop the :hover state */
+.name-popover::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  height: 1.6rem;
+}
+
+/* subtle pointer triangle */
+.name-popover::after {
+  content: "";
+  position: absolute;
+  top: -7px; left: 1.6rem;
+  width: 12px; height: 12px;
+  background: var(--bg-1);
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+  transform: rotate(45deg);
+}
+
+.name-popover__hint {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  color: var(--fg-2);
+  padding: 0 0.1rem;
+}
+/* LinkedIn badge widget inside the popover.
+   The iframe brings its own dark framing — we just constrain dimensions
+   and reset any inherited h1 font scaling that might leak through. */
+.name-popover .LI-profile-badge {
+  display: block;
+  font-family: var(--font-sans) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  font-style: normal !important;
+  letter-spacing: normal !important;
+  line-height: 1.4 !important;
+  max-width: 100%;
+  margin: 0;
+}
+.name-popover .LI-profile-badge iframe {
+  display: block;
+  max-width: 100% !important;
+  border-radius: 8px;
+}
+/* fallback link (shown if LinkedIn's iframe doesn't load) */
+.name-popover .LI-simple-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.9rem;
+  font: inherit !important;
+  color: var(--accent) !important;
+  background: var(--bg-0);
+  border: 1px solid var(--line-bright);
+  border-radius: 999px;
+  text-decoration: none;
+}
+.name-popover .LI-simple-link::after { content: "↗"; opacity: 0.6; }
+
+@media (hover: hover) and (pointer: fine) {
+  .hero__name:hover .name-popover,
+  .hero__name:focus-visible .name-popover {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    transition:
+      opacity 0.45s var(--ease),
+      transform 0.55s var(--ease),
+      visibility 0s;                    /* show INSTANTLY when opening */
+  }
+}
+
+/* on touch / no-hover, hide entirely — popover would be sticky-on-tap */
+@media (hover: none) {
+  .name-popover { display: none; }
+}
+
+.hero__lede {
+  max-width: 58ch;
+  font-family: var(--font-serif);
+  font-weight: 350;
+  font-size: clamp(1.15rem, 1.6vw, 1.4rem);
+  line-height: 1.5;
+  color: var(--fg-1);
+  margin: 0.4rem 0 0;
+  letter-spacing: -0.005em;
+}
+.hero__lede em {
+  font-style: italic;
+  color: var(--accent);
+}
+.hero__lede--sub {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--fg-2);
+  margin-top: 0.2rem;
+  max-width: 64ch;
+}
+
+.hero__cta {
+  display: flex; gap: 0.75rem; flex-wrap: wrap;
+  margin-top: 1.6rem;
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: 0.55rem;
+  padding: 0.78rem 1.4rem;
+  border: 1px solid var(--line-bright);
+  background: transparent;
+  color: var(--fg-0);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  border-radius: 999px;
+  transition: all 0.5s var(--ease);
+}
+.btn:hover { background: var(--surface-2); border-color: var(--fg-1); }
+
+.btn--primary {
+  background: var(--fg-0);
+  color: var(--bg-0);
+  border-color: var(--fg-0);
+}
+.btn--primary:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg-0);
+}
+.btn__arrow {
+  display: inline-block;
+  transition: transform 0.5s var(--ease);
+}
+.btn:hover .btn__arrow { transform: translateX(3px); }
+
+.prompt { display: none; }  /* legacy — keep CSS but hide */
+
+/* -------------------------------------------------------------------------
+   sections
+   ------------------------------------------------------------------------- */
+.section {
+  padding: clamp(5rem, 12vh, 8rem) 0;
+  border-top: 1px solid var(--line);
+}
+.hero + .section { border-top: 1px solid var(--line); }
+
+.section__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 3.5rem;
+  max-width: 56ch;
+}
+.section__kicker {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--fg-2);
+  letter-spacing: 0.08em;
+}
+.section__title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: var(--fg-0);
+}
+.section__sub {
+  color: var(--fg-2);
+  margin: 0.4rem 0 0;
+  font-size: 15px;
+}
+
+/* -------------------------------------------------------------------------
+   project grid (calm, no tilt, no scanlines)
+   ------------------------------------------------------------------------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.25rem;
+}
+
+.card {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(200px, 30vh) 1fr;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  isolation: isolate;
+
+  /* reveal */
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 1s var(--ease), transform 1s var(--ease),
+              border-color 0.5s var(--ease), box-shadow 0.6s var(--ease);
+  transition-delay: calc(var(--index, 0) * 110ms);
+}
+.card[data-revealed="1"] { opacity: 1; transform: translateY(0); }
+
+/* role-style cards (e.g. volunteering) — no hover-video, so collapse the
+   media row to just enough height for the status badge + date stamp */
+.card--no-video { grid-template-rows: 64px 1fr; }
+.card--no-video .card__media {
+  background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+}
+
+.card:hover {
+  border-color: var(--accent-soft);
+  box-shadow: 0 24px 60px -28px rgba(46, 32, 22, 0.22);
+  transform: translateY(-3px);
+}
+
+/* media zone */
+.card__media {
+  position: relative;
+  background: linear-gradient(160deg, var(--bg-2), var(--bg-1));
+  overflow: hidden;
+}
+.card__video {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity 0.9s var(--ease), transform 1.4s var(--ease);
+  filter: saturate(0.95) contrast(0.96) sepia(0.06);
+}
+.card:hover .card__video { opacity: 1; transform: scale(1); }
+
+/* hide the old scanline overlay element if it's still in the DOM */
+.card__scanlines { display: none; }
+
+.card__status {
+  position: absolute; top: 14px; left: 14px;
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0.3rem 0.65rem;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: var(--fg-1);
+  background: rgba(243, 236, 225, 0.85);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+}
+.card__status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+}
+.card__stamp {
+  position: absolute; bottom: 14px; right: 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-2);
+  background: rgba(243, 236, 225, 0.85);
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+}
+
+/* body */
+.card__body {
+  padding: 1.6rem 1.6rem 1.5rem;
+  display: grid; gap: 0.7rem;
+}
+.card__head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.card__name {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 1.7rem;
+  margin: 0;
+  letter-spacing: -0.015em;
+  color: var(--fg-0);
+}
+.card__index {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-3);
+  letter-spacing: 0.08em;
+}
+.card__tagline {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--accent-sage);            /* uniform sage green across all cards */
+  margin: 0;
+  line-height: 1.45;
+}
+.card__desc {
+  font-size: 14px;
+  color: var(--fg-1);
+  margin: 0;
+  line-height: 1.6;
+}
+.card__stack {
+  list-style: none; padding: 0; margin: 0.5rem 0 0;
+  display: flex; gap: 0.4rem; flex-wrap: wrap;
+}
+.card__stack li {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-2);
+  border: 1px solid var(--line);
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: var(--bg-0);
+}
+.card__links {
+  display: flex; gap: 1rem;
+  margin-top: 0.7rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--line);
+}
+.card__link {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent);
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+  transition: border-color 0.4s var(--ease), opacity 0.4s var(--ease);
+}
+.card__link:hover { border-color: currentColor; }
+.card__link--ghost { color: var(--fg-2); }
+
+/* -------------------------------------------------------------------------
+   experience (editorial list)
+   ------------------------------------------------------------------------- */
+.exp-list {
+  display: grid; gap: 0;
+}
+.exp {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 2rem;
+  padding: 2.25rem 0;
+  border-top: 1px solid var(--line);
+
+  opacity: 0; transform: translateY(14px);
+  transition: opacity 1s var(--ease), transform 1s var(--ease);
+  transition-delay: calc(var(--index, 0) * 110ms);
+}
+.exp-list[data-revealed="1"] .exp { opacity: 1; transform: translateY(0); }
+.exp:last-child { border-bottom: 1px solid var(--line); }
+
+@media (max-width: 720px) {
+  .exp { grid-template-columns: 1fr; gap: 0.6rem; padding: 1.5rem 0; }
+}
+
+.exp__head {
+  display: flex; flex-direction: column; gap: 0.3rem;
+  padding-top: 0.4rem;
+}
+.exp__when {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--fg-1);
+}
+.exp__loc {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-3);
+  letter-spacing: 0.04em;
+}
+
+.exp__body { display: grid; gap: 0.7rem; max-width: 64ch; }
+.exp__role {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 1.45rem;
+  letter-spacing: -0.01em;
+  margin: 0;
+  color: var(--fg-0);
+  line-height: 1.2;
+}
+.exp__org {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--accent);
+  margin: 0;
+  font-size: 1.05rem;
+}
+.exp__summary {
+  color: var(--fg-1);
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.exp__bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0.3rem 0 0;
+  display: grid; gap: 0.4rem;
+}
+.exp__bullets li {
+  position: relative;
+  padding-left: 1.2rem;
+  font-size: 14px;
+  color: var(--fg-1);
+  line-height: 1.55;
+}
+.exp__bullets li::before {
+  content: "→";
+  position: absolute;
+  left: 0; top: 0;
+  color: var(--accent-sage);
+  font-family: var(--font-mono);
+}
+.exp__tools { margin-top: 0.6rem; }
+
+/* -------------------------------------------------------------------------
+   upcoming (timeline) — gentler
+   ------------------------------------------------------------------------- */
+.timeline {
+  display: grid; gap: 0;
+}
+.lane {
+  display: grid;
+  grid-template-columns: 110px 12px 1fr;
+  gap: 1.5rem;
+  padding: 2rem 0;
+  border-bottom: 1px solid var(--line);
+  opacity: 0; transform: translateY(12px);
+  transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
+  transition-delay: calc(var(--index, 0) * 120ms);
+}
+.lane:last-child { border-bottom: none; }
+.timeline[data-revealed="1"] .lane { opacity: 1; transform: translateY(0); }
+
+.lane__when {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  color: var(--fg-2);
+  padding-top: 0.4rem;
+}
+.lane__rail {
+  position: relative;
+  width: 1px; height: 100%;
+  background: var(--line);
+  justify-self: center;
+}
+.lane__rail::before {
+  content: "";
+  position: absolute; top: 0.5rem; left: -3.5px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent-amber);
+  box-shadow: 0 0 0 4px rgba(202, 161, 90, 0.16);
+}
+.lane__card { display: grid; gap: 0.5rem; }
+.lane__card h3 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 1.6rem;
+  margin: 0;
+  letter-spacing: -0.015em;
+  color: var(--fg-0);
+}
+.lane__tag {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--accent-amber);
+  margin: 0;
+  font-size: 15px;
+}
+.lane__desc {
+  color: var(--fg-1);
+  margin: 0;
+  max-width: 64ch;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* -------------------------------------------------------------------------
+   contact + linkedin
+   ------------------------------------------------------------------------- */
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.contact-card {
+  padding: 2rem;
+  border: 1px solid var(--line);
+  background: var(--bg-1);
+  border-radius: 14px;
+  display: grid; gap: 0.85rem;
+  transition: border-color 0.5s var(--ease), background 0.5s var(--ease),
+              box-shadow 0.6s var(--ease);
+}
+.contact-card:hover {
+  border-color: var(--accent-soft);
+  box-shadow: 0 18px 50px -28px rgba(46, 32, 22, 0.18);
+}
+.contact-card__title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
+  font-size: 1.5rem;
+  margin: 0;
+  color: var(--fg-0);
+}
+.contact-card__line {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--fg-0);
+  border-bottom: 1px solid var(--line-bright);
+  padding-bottom: 0.4rem;
+  transition: border-color 0.4s var(--ease), color 0.4s var(--ease);
+}
+.contact-card__line:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ── hero contact card (used for github — chicago skyline backdrop) ────── */
+.contact-card--hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 260px;
+  padding: 1.5rem 1.6rem 1.6rem;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  color: rgba(246, 239, 227, 0.95);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-decoration: none;
+  transition:
+    transform 0.55s var(--ease),
+    border-color 0.5s var(--ease),
+    box-shadow 0.6s var(--ease);
+}
+.contact-card__bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-size: cover;
+  background-position: center 35%;
+  background-repeat: no-repeat;
+  transition: transform 1.4s var(--ease);
+}
+/* per-card chicago backgrounds — each one a different mood */
+.contact-card--email .contact-card__bg {
+  background-image:
+    linear-gradient(180deg, rgba(8, 10, 16, 0.35) 0%, rgba(8, 10, 16, 0.80) 100%),
+    url('https://images.unsplash.com/photo-1492666673288-3c4b4576ad9a?w=1600&q=85&auto=format&fit=crop');
+}
+.contact-card--github .contact-card__bg {
+  background-image:
+    linear-gradient(180deg, rgba(8, 10, 16, 0.30) 0%, rgba(8, 10, 16, 0.78) 100%),
+    url('https://images.unsplash.com/photo-1494522855154-9297ac14b55f?w=1600&q=85&auto=format&fit=crop');
+}
+.contact-card--linkedin .contact-card__bg {
+  background-image:
+    linear-gradient(180deg, rgba(8, 10, 16, 0.35) 0%, rgba(8, 10, 16, 0.82) 100%),
+    url('https://images.unsplash.com/photo-1581373449483-37449f962b6c?w=1600&q=85&auto=format&fit=crop');
+}
+.contact-card--hero:hover .contact-card__bg { transform: scale(1.04); }
+.contact-card--hero:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 30px 70px -28px rgba(8, 10, 16, 0.5);
+  transform: translateY(-3px);
+}
+
+.contact-card__handle {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: rgba(246, 239, 227, 0.85);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.contact-card__hero-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  align-items: flex-start;
+}
+.contact-card--hero .contact-card__title {
+  color: #f6efe3;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+.contact-card__hero-line {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  color: rgba(246, 239, 227, 0.88);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+.contact-card__hero-badge {
+  display: block;
+  height: 38px;
+  width: auto;
+  border-radius: 6px;
+  transition: transform 0.4s var(--ease);
+}
+.contact-card--hero:hover .contact-card__hero-badge { transform: translateY(-2px); }
+
+/* LinkedIn wordmark sits on a white pill — the blue logo needs a light
+   background to read against the dark chicago overlay */
+.contact-card__hero-badge--linkedin {
+  height: 28px;
+  background: #ffffff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  box-sizing: content-box;
+}
+
+/* shields.io brand badge — sits at the top of email + github cards */
+.contact-card__badge {
+  display: inline-block;
+  align-self: flex-start;
+  margin-top: 0.1rem;
+  border-radius: 6px;
+  transition: transform 0.4s var(--ease), opacity 0.4s var(--ease),
+              box-shadow 0.5s var(--ease);
+}
+.contact-card__badge img {
+  display: block;
+  height: 38px;
+  width: auto;
+  border-radius: 6px;
+}
+.contact-card__badge:hover {
+  transform: translateY(-2px);
+  opacity: 0.92;
+  box-shadow: 0 10px 20px -12px rgba(46, 32, 22, 0.35);
+}
+
+.linkedin-slot {
+  /* tall enough to hold the medium-horizontal iframe (~300px) without
+     pushing the surrounding text away when it loads */
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+.linkedin-slot .LI-profile-badge {
+  max-width: 100%;
+  display: block;
+  margin: 0;
+}
+.linkedin-slot .LI-profile-badge iframe {
+  max-width: 100% !important;
+  display: block;
+}
+/* fallback link styling — visible even if the iframe never loads */
+.linkedin-slot .LI-simple-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.9rem;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--bg-0);
+  border: 1px solid var(--line-bright);
+  border-radius: 999px;
+  transition: border-color 0.4s var(--ease), color 0.4s var(--ease);
+}
+.linkedin-slot .LI-simple-link:hover {
+  color: var(--fg-0);
+  border-color: var(--accent);
+}
+.linkedin-slot .LI-simple-link::after { content: "↗"; opacity: 0.65; }
+.linkedin-hint {
+  margin: 0.6rem 0 0;
+  line-height: 1.6;
+  color: var(--fg-3);
+}
+.linkedin-hint code {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  padding: 0 0.4em;
+  font-size: 0.9em;
+  color: var(--fg-1);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+}
+
+/* -------------------------------------------------------------------------
+   footer
+   ------------------------------------------------------------------------- */
+.root-footer {
+  margin-top: 3rem;
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--line);
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+}
+
+/* -------------------------------------------------------------------------
+   legacy / removed elements
+   ------------------------------------------------------------------------- */
+.shader-bg,
+.cursor,
+.cursor__ring,
+.cursor__dot,
+.hero__stripe,
+.hero__dot,
+.glitch::before,
+.glitch::after,
+.tag { display: none; }
+.glitch { all: unset; font: inherit; color: inherit; }
+
+/* -------------------------------------------------------------------------
+   motion guard
+   ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .card, .lane { opacity: 1; transform: none; }
+}
+
+/* show native cursor again (we removed the custom one) */
+body { cursor: auto; }

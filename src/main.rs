@@ -1,0 +1,9 @@
+use leptos::mount::mount_to_body;
+use perm_portfolio::app::App;
+
+fn main() {
+    console_error_panic_hook::set_once();
+    let _ = console_log::init_with_level(log::Level::Info);
+    log::info!("[boot] perm_portfolio wasm online");
+    mount_to_body(App);
+}

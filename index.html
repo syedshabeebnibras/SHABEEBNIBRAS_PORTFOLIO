@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f3ece1" />
+  <meta name="description" content="Syed Shabeeb Nibras — AI engineer. Production LLM systems, RAG, multi-agent orchestration. Portfolio compiled from Rust → WebAssembly." />
+  <meta property="og:title" content="shabeeb.nibras // ai engineering" />
+  <meta property="og:description" content="Production LLM systems, RAG, multi-agent orchestration. Compiled from Rust → WebAssembly." />
+  <meta property="og:type" content="website" />
+  <title>shabeeb.nibras // ai engineering</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+
+  <link data-trunk rel="css" href="style/main.css" />
+  <link data-trunk rel="rust" data-bin="perm_portfolio" data-wasm-opt="z" />
+
+  <!-- LinkedIn badge script is injected by Footer's Effect once the DOM mounts.
+       Loading it here too would race the WASM mount and clobber the badge. -->
+
+</head>
+<body>
+  <noscript>
+    <p style="font-family: monospace; padding: 2rem; color: #00ffd1; background: #0a0a0f;">
+      this site is compiled from rust → webassembly. please enable javascript so the wasm runtime can boot.
+    </p>
+  </noscript>
+</body>
+</html>

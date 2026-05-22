@@ -18,7 +18,11 @@
   />
 
   <link data-trunk rel="css" href="style/main.css" />
-  <link data-trunk rel="rust" data-bin="perm_portfolio" data-wasm-opt="z" />
+  <!-- data-wasm-opt removed: Trunk 0.21.5's bundled wasm-opt (Binaryen 116)
+       doesn't accept bulk-memory ops without an --enable-bulk-memory flag,
+       and Trunk doesn't expose that arg. rustc's release profile already
+       does -Oz + LTO + strip, so the wasm is well-optimized without it. -->
+  <link data-trunk rel="rust" data-bin="perm_portfolio" />
 
   <!-- LinkedIn badge script is injected by Footer's Effect once the DOM mounts.
        Loading it here too would race the WASM mount and clobber the badge. -->

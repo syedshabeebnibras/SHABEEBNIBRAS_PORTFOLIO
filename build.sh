@@ -43,7 +43,13 @@ export PATH="$PWD/bin:$PATH"
 trunk --version
 
 # ─── 4) build ───────────────────────────────────────────────────────────
+# Trunk's bundled wasm-opt (Binaryen 116) doesn't accept bulk-memory ops
+# (memory.copy / memory.fill) without an --enable-bulk-memory flag, and
+# Trunk doesn't expose that arg. Tell rustc to NOT emit those ops so the
+# wasm passes wasm-opt validation unchanged.
 echo "[4/4] building release wasm bundle..."
+export RUSTFLAGS="-C target-feature=-bulk-memory"
+echo "RUSTFLAGS=$RUSTFLAGS"
 trunk build --release
 
 echo "[done] dist/ ready for vercel"

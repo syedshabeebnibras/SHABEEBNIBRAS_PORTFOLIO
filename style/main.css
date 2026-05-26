@@ -427,6 +427,11 @@ main.root {
   object-position: top center;
   transition: transform 1.4s var(--ease), filter 0.4s var(--ease);
   filter: saturate(0.96);
+
+  /* hide the broken-image alt text + icon if the file isn't there yet.
+     dark gradient placeholder of card__media shows through instead. */
+  color: transparent;
+  font-size: 0;
 }
 .card--poster:hover .card__poster {
   transform: scale(1.04);

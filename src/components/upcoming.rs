@@ -21,7 +21,7 @@ pub fn Upcoming() -> impl IntoView {
     view! {
         <section class="section section--upcoming" id="upcoming">
             <header class="section__head">
-                <span class="section__kicker">"04 — In flight"</span>
+                <span class="section__kicker">"05 — In flight"</span>
                 <h2 class="section__title">"What's next"</h2>
                 <p class="section__sub">"committed. quietly in progress."</p>
             </header>

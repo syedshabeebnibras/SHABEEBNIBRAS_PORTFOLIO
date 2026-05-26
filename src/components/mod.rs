@@ -1,6 +1,7 @@
 pub mod status_bar;
 pub mod hero;
 pub mod experience;
+pub mod skills;
 pub mod projects_grid;
 pub mod project_card;
 pub mod volunteering;

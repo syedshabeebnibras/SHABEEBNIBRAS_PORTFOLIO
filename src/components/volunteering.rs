@@ -14,7 +14,7 @@ pub fn Volunteering() -> impl IntoView {
     view! {
         <section class="section" id="volunteering">
             <header class="section__head">
-                <span class="section__kicker">"03 — Volunteering"</span>
+                <span class="section__kicker">"04 — Volunteering"</span>
                 <h2 class="section__title">"Giving back"</h2>
                 <p class="section__sub">
                     {format!(

@@ -15,7 +15,7 @@ pub fn ProjectsGrid() -> impl IntoView {
     view! {
         <section class="section" id="work">
             <header class="section__head">
-                <span class="section__kicker">"02 — Selected work"</span>
+                <span class="section__kicker">"03 — Selected work"</span>
                 <h2 class="section__title">"Things I've shipped"</h2>
                 <p class="section__sub">
                     {format!("{count} projects. hover any card for a quiet preview.")}

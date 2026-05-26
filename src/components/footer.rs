@@ -5,7 +5,7 @@ pub fn Footer() -> impl IntoView {
     view! {
         <section class="section section--contact" id="contact">
             <header class="section__head">
-                <span class="section__kicker">"05 — Get in touch"</span>
+                <span class="section__kicker">"06 — Get in touch"</span>
                 <h2 class="section__title">"Let's talk"</h2>
                 <p class="section__sub">"always happy to chat about agents, evals, and quiet systems."</p>
             </header>

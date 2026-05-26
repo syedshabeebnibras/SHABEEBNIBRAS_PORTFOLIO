@@ -12,3 +12,5 @@ poster: Some("/assets/otelmind-cost-analytics.png"),
 
 - `otelmind-cost-analytics.png` — banner for the OTELMIND project card.
   Save the Cost Analytics dashboard screenshot here.
+- `querymind-landing.png` — banner for the QueryMind project card.
+  Save the QueryMind landing page screenshot here.

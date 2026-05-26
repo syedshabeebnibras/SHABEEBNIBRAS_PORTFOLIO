@@ -95,8 +95,10 @@ pub fn all() -> Vec<Project> {
             stack: &["python", "langchain", "gpt-4o", "sqlglot", "postgres", "streamlit", "ge"],
             link: Some("https://querymind-frontend-production.up.railway.app/"),
             repo: None,
-            video_src: Some("https://cdn.coverr.co/videos/coverr-night-traffic-lights-1574/1080p.mp4"),
-            poster: None,
+            // Static product banner — the QueryMind landing page.
+            // Drop the file at assets/querymind-landing.png.
+            video_src: None,
+            poster: Some("/assets/querymind-landing.png"),
             status: Status::Live,
             stamp: "2026.Q1",
         },

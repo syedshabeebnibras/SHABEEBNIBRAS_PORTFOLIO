@@ -70,9 +70,11 @@ pub fn all() -> Vec<Project> {
             stack: &["python", "fastapi", "postgres", "mcp", "claude", "alembic", "railway"],
             link: Some("https://otelmind-dashboard.vercel.app/traces"),
             repo: None,
-            // ▼ swap for your own demo capture (Vercel Blob / S3 / CDN)
-            video_src: Some("https://cdn.coverr.co/videos/coverr-typing-on-a-laptop-keyboard-2873/1080p.mp4"),
-            poster: None,
+            // Static product banner — the real Cost Analytics dashboard.
+            // Drop the file at assets/otelmind-cost-analytics.png (Trunk copies
+            // the whole assets/ dir to dist/ via the copy-dir link in index.html).
+            video_src: None,
+            poster: Some("/assets/otelmind-cost-analytics.png"),
             status: Status::Live,
             stamp: "2026.Q2",
         },

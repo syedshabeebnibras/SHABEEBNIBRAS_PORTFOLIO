@@ -23,6 +23,10 @@
        and Trunk doesn't expose that arg. rustc's release profile already
        does -Oz + LTO + strip, so the wasm is well-optimized without it. -->
   <link data-trunk rel="rust" data-bin="perm_portfolio" />
+  <!-- copy everything in ./assets to dist/assets — used for product
+       screenshots, downloadable resumes, etc. Referenced by absolute
+       paths in Rust like "/assets/otelmind-cost-analytics.png". -->
+  <link data-trunk rel="copy-dir" href="./assets" />
 
   <!-- LinkedIn badge script is injected by Footer's Effect once the DOM mounts.
        Loading it here too would race the WASM mount and clobber the badge. -->

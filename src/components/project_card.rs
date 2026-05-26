@@ -58,7 +58,18 @@ pub fn ProjectCard(project: Project, index: usize) -> impl IntoView {
     let link = project.link;
     let repo = project.repo;
 
-    let card_class = if video_src.is_some() { "card" } else { "card card--no-video" };
+    // Three media modes:
+    //   1. video_src present       → <video> hover-plays (default product loop)
+    //   2. poster only             → <img> static banner with ken-burns hover
+    //   3. neither                 → collapsed media row (role-style cards)
+    let has_poster_only = video_src.is_none() && project.poster.is_some();
+    let card_class = if video_src.is_some() {
+        "card"
+    } else if has_poster_only {
+        "card card--poster"
+    } else {
+        "card card--no-video"
+    };
 
     view! {
         <article
@@ -77,6 +88,14 @@ pub fn ProjectCard(project: Project, index: usize) -> impl IntoView {
                         src=src
                         poster=poster
                         preload="metadata"
+                    />
+                })}
+                {(has_poster_only).then(|| view! {
+                    <img
+                        class="card__poster"
+                        src=poster
+                        alt=format!("{name} preview")
+                        loading="lazy"
                     />
                 })}
                 <div class="card__status">

@@ -414,6 +414,25 @@ main.root {
   background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
 }
 
+/* poster-only cards — static product screenshot with ken-burns hover */
+.card--poster .card__media {
+  background: linear-gradient(135deg, #0f1218, #1a1e2a);   /* matches dark dashboards */
+}
+.card__poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform 1.4s var(--ease), filter 0.4s var(--ease);
+  filter: saturate(0.96);
+}
+.card--poster:hover .card__poster {
+  transform: scale(1.04);
+  filter: saturate(1.05);
+}
+
 .card:hover {
   border-color: var(--accent-soft);
   box-shadow: 0 24px 60px -28px rgba(46, 32, 22, 0.22);

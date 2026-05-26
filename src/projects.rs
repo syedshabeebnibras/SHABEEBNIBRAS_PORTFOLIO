@@ -135,8 +135,9 @@ pub fn all() -> Vec<Project> {
             stack: &["python", "tensorflow", "keras", "static-analysis"],
             link: Some("https://easychair.org/publications/preprint/G5BK/open"),
             repo: None,
+            // paper-style banner — drop at assets/Androidmalware.png
             video_src: None,
-            poster: None,
+            poster: Some("/assets/Androidmalware.png"),
             status: Status::Shipped,
             stamp: "2022.Q2",
         },

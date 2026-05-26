@@ -14,3 +14,6 @@ poster: Some("/assets/otelmind-cost-analytics.png"),
   Save the Cost Analytics dashboard screenshot here.
 - `querymind-landing.png` — banner for the QueryMind project card.
   Save the QueryMind landing page screenshot here.
+- `Androidmalware.png` — banner for the android.malware.dl project card.
+  Note the casing — `Androidmalware.png` is case-sensitive on Linux/Vercel,
+  so the filename in projects.rs must match exactly.

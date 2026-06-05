@@ -17,6 +17,22 @@ struct Role {
 fn roles() -> Vec<Role> {
     vec![
         Role {
+            period: "mar 2025 — nov 2025",
+            company: "DePaul University",
+            location: "Chicago, IL · part-time",
+            role: "Teaching Assistant · Software Architecture I",
+            summary: "Partnered with Prof. Vahid Alizadeh to run a graduate course of \
+                40+ students — instruction, grading, office hours, and the rubrics \
+                that held it all together.",
+            bullets: &[
+                "+20% student understanding and +15% engagement by grounding patterns, microservices, scalability, and security in real-world cases through weekly office hours",
+                "4-day average feedback turnaround across 150+ submissions — diagrams, design artifacts, and written analyses graded against structured rubrics",
+                "60+ one-on-one and group sessions guiding architectural decisions, UML modeling, component responsibility, and trade-off analysis",
+                "+25% documentation quality by calibrating rubrics with the lead instructor on risk analysis and non-functional requirements",
+            ],
+            tools: &["software architecture", "uml", "microservices", "design patterns"],
+        },
+        Role {
             period: "mar 2022 — jun 2023",
             company: "Wipro Limited",
             location: "Hyderabad, IN",
@@ -77,7 +93,7 @@ pub fn Experience() -> impl IntoView {
             <header class="section__head">
                 <span class="section__kicker">"01 — Experience"</span>
                 <h2 class="section__title">"Where I've been"</h2>
-                <p class="section__sub">"three years across data, dev, and security."</p>
+                <p class="section__sub">"four roles across teaching, data, dev, and security — most recent first."</p>
             </header>
 
             <div class="exp-list" node_ref=list_ref>

@@ -80,6 +80,8 @@ pub fn ProjectCard(project: Project, index: usize) -> impl IntoView {
             on:mouseleave=on_leave
             style=format!("--accent: {status_color}; --index: {index}")
         >
+          <div class="card__3d">
+            <div class="card__glare" aria-hidden="true"></div>
             <div class="card__media">
                 {video_src.map(|src| view! {
                     <video
@@ -134,6 +136,7 @@ pub fn ProjectCard(project: Project, index: usize) -> impl IntoView {
                     })}
                 </footer>
             </div>
+          </div>
         </article>
     }
 }

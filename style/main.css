@@ -451,13 +451,12 @@ main.root {
 
 .card {
   position: relative;
-  display: grid;
-  grid-template-rows: minmax(200px, 30vh) 1fr;
   background: var(--bg-1);
   border: 1px solid var(--line);
   border-radius: 14px;
   overflow: hidden;
   isolation: isolate;
+  perspective: 1100px;          /* gives the inner .card__3d real depth */
 
   /* reveal */
   opacity: 0; transform: translateY(20px);
@@ -467,9 +466,36 @@ main.root {
 }
 .card[data-revealed="1"] { opacity: 1; transform: translateY(0); }
 
+/* the 3D plane — the Rust tilt loop rotates this toward the cursor.
+   the two-row grid (media + body) lives here so it tilts as one solid. */
+.card__3d {
+  display: grid;
+  grid-template-rows: minmax(200px, 30vh) 1fr;
+  height: 100%;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* cursor-tracking sheen swept across the tilted plane */
+.card__glare {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: var(--ga, 0);
+  background: radial-gradient(
+    32% 60% at var(--gx, 50%) var(--gy, 50%),
+    rgba(255, 255, 255, 0.55),
+    transparent 70%
+  );
+  mix-blend-mode: soft-light;
+  transition: opacity 0.3s var(--ease);
+}
+
 /* role-style cards (e.g. volunteering) — no hover-video, so collapse the
    media row to just enough height for the status badge + date stamp */
-.card--no-video { grid-template-rows: 64px 1fr; }
+.card--no-video .card__3d { grid-template-rows: 64px 1fr; }
 .card--no-video .card__media {
   background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
 }
@@ -500,8 +526,8 @@ main.root {
 
 .card:hover {
   border-color: var(--accent-soft);
-  box-shadow: 0 24px 60px -28px rgba(46, 32, 22, 0.22);
-  transform: translateY(-3px);
+  box-shadow: 0 32px 70px -26px rgba(46, 32, 22, 0.30);
+  /* lift is handled in 3D by the Rust loop (translateZ on .card__3d) */
 }
 
 /* media zone */
@@ -755,6 +781,9 @@ main.root {
     animation: none !important;
   }
   .chip__mag { transform: none !important; }
+  .card__3d { transform: none !important; }
+  .card__glare { display: none; }
+  .hero__name { transform: none !important; }
   .hero__name .char {
     opacity: 1;
     transform: none;

@@ -91,6 +91,8 @@ pub fn wire_kinetic_name(root: Element) {
         return;
     }
     let pointer = pointer();
+    let plane_root = root.clone();
+    let plane_state = Cell::new((0.0_f64, 0.0_f64));
 
     let radius = 150.0_f64;
     let f = Rc::new(RefCell::new(None::<Closure<dyn FnMut()>>));
@@ -98,6 +100,8 @@ pub fn wire_kinetic_name(root: Element) {
     *g.borrow_mut() = Some(Closure::new(move || {
         let t = now_seconds();
         let (mx, my) = pointer.get();
+        // whole-name 3D plane tilt toward the cursor (depth layer)
+        apply_plane_tilt(&plane_root, &plane_state, mx, my);
         for (i, el) in chars.iter().enumerate() {
             let rect = el.get_bounding_client_rect();
             let cx = rect.left() + rect.width() * 0.5;
@@ -133,6 +137,29 @@ pub fn wire_kinetic_name(root: Element) {
         request_frame(f.borrow().as_ref().unwrap());
     }));
     request_frame(g.borrow().as_ref().unwrap());
+}
+
+// ─── 1b) hero name 3D plane tilt ─────────────────────────────────────────
+// Rotates the whole `.hero__name` toward the cursor like a tilting plate,
+// composing with the per-glyph 2D magnetism for a layered depth effect.
+fn apply_plane_tilt(root: &Element, state: &Cell<(f64, f64)>, mx: f64, my: f64) {
+    let rect = root.get_bounding_client_rect();
+    let cx = rect.left() + rect.width() * 0.5;
+    let cy = rect.top() + rect.height() * 0.5;
+    let nx = ((mx - cx) / (rect.width() * 0.5 + 1.0)).clamp(-1.4, 1.4);
+    let ny = ((my - cy) / (rect.height() * 0.5 + 1.0)).clamp(-1.4, 1.4);
+    let (mut prx, mut pry) = state.get();
+    let trx = -ny * 3.2; // subtle — degrees
+    let try_ = nx * 4.2;
+    prx += (trx - prx) * 0.08;
+    pry += (try_ - pry) * 0.08;
+    state.set((prx, pry));
+    if let Some(html) = root.dyn_ref::<HtmlElement>() {
+        let _ = html.style().set_property(
+            "transform",
+            &format!("perspective(1400px) rotateX({prx:.2}deg) rotateY({pry:.2}deg)"),
+        );
+    }
 }
 
 // ─── 2) magnetic skill chips ─────────────────────────────────────────────
@@ -183,6 +210,88 @@ pub fn wire_magnetic_chips(root: Element) {
         request_frame(f.borrow().as_ref().unwrap());
     }));
     request_frame(g.borrow().as_ref().unwrap());
+}
+
+// ─── 2b) 3D tilt project cards ───────────────────────────────────────────
+// Each `.card__3d` rotates in 3D toward the cursor while it hovers, lifts on
+// the Z axis, and exposes `--gx/--gy/--ga` for a cursor-tracking glare. All
+// channels are spring-smoothed so entry/exit glides instead of snapping.
+pub fn wire_tilt_cards(root: Element) {
+    if reduced_motion() {
+        return;
+    }
+    let planes = collect(&root, ".card__3d");
+    if planes.is_empty() {
+        return;
+    }
+    // state per card: (rotX, rotY, lift 0..1, glare 0..1)
+    let cards: Rc<Vec<(HtmlElement, Cell<(f64, f64, f64, f64)>)>> = Rc::new(
+        planes
+            .into_iter()
+            .map(|el| (el, Cell::new((0.0, 0.0, 0.0, 0.0))))
+            .collect(),
+    );
+    let pointer = pointer();
+
+    let f = Rc::new(RefCell::new(None::<Closure<dyn FnMut()>>));
+    let g = f.clone();
+    *g.borrow_mut() = Some(Closure::new(move || {
+        let (mx, my) = pointer.get();
+        for (el, st) in cards.iter() {
+            let rect = el.get_bounding_client_rect();
+            let cx = rect.left() + rect.width() * 0.5;
+            let cy = rect.top() + rect.height() * 0.5;
+            let inside = mx >= rect.left()
+                && mx <= rect.right()
+                && my >= rect.top()
+                && my <= rect.bottom();
+
+            let nx = ((mx - cx) / (rect.width() * 0.5 + 1.0)).clamp(-1.0, 1.0);
+            let ny = ((my - cy) / (rect.height() * 0.5 + 1.0)).clamp(-1.0, 1.0);
+
+            let (mut trx, mut try_, mut tlift, mut tgl) = (0.0, 0.0, 0.0, 0.0);
+            if inside {
+                trx = -ny * 6.5; // degrees
+                try_ = nx * 8.5;
+                tlift = 1.0;
+                tgl = 1.0;
+            }
+
+            let (mut rx, mut ry, mut lift, mut gl) = st.get();
+            let k = 0.12;
+            rx += (trx - rx) * k;
+            ry += (try_ - ry) * k;
+            lift += (tlift - lift) * k;
+            gl += (tgl - gl) * k;
+            st.set((rx, ry, lift, gl));
+
+            let style = el.style();
+            let _ = style.set_property(
+                "transform",
+                &format!(
+                    "rotateX({rx:.2}deg) rotateY({ry:.2}deg) translateZ({:.1}px)",
+                    lift * 28.0
+                ),
+            );
+            let gx = (nx * 0.5 + 0.5) * 100.0;
+            let gy = (ny * 0.5 + 0.5) * 100.0;
+            let _ = style.set_property("--gx", &format!("{gx:.1}%"));
+            let _ = style.set_property("--gy", &format!("{gy:.1}%"));
+            let _ = style.set_property("--ga", &format!("{:.3}", gl * 0.55));
+        }
+        request_frame(f.borrow().as_ref().unwrap());
+    }));
+    request_frame(g.borrow().as_ref().unwrap());
+}
+
+/// Convenience: wire 3D tilt across every `.card__3d` in the document.
+/// Call once after the whole page has mounted (covers Work + Volunteering).
+pub fn wire_tilt_all() {
+    if let Some(doc) = web_sys::window().and_then(|w| w.document()) {
+        if let Some(body) = doc.body() {
+            wire_tilt_cards(body.into());
+        }
+    }
 }
 
 // ─── 3) hero warm-particle field (2D canvas) ─────────────────────────────

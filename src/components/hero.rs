@@ -1,9 +1,9 @@
 use leptos::prelude::*;
 use wasm_bindgen::JsCast;
 
+use crate::components::motion::{start_hero_field, wire_kinetic_name};
+
 /// Inject LinkedIn's profile.js into the document body after WASM has mounted.
-/// The script walks the DOM for `.LI-profile-badge` divs and replaces each
-/// with the rendered badge iframe. Loaded once per page — async + defer.
 fn load_linkedin_badge_script() {
     let Some(window) = web_sys::window() else { return };
     let Some(document) = window.document() else { return };
@@ -18,26 +18,84 @@ fn load_linkedin_badge_script() {
     }
 }
 
+/// Build per-glyph spans grouped into `.word` wrappers (so the name only
+/// wraps between words on narrow screens, never mid-word). Each letter's
+/// `.char` carries a monotonic `--ci` for the staggered entrance wave; the
+/// inner `.char__in` is the target of the Rust cursor-physics loop. A shared
+/// `counter` threads the index across multiple calls (name + surname).
+fn push_words(out: &mut Vec<AnyView>, text: &str, counter: &mut usize) {
+    let words: Vec<&str> = text.split(' ').collect();
+    for (wi, word) in words.iter().enumerate() {
+        if wi > 0 {
+            out.push(view! { <span class="char--space">" "</span> }.into_any());
+        }
+        if word.is_empty() {
+            continue;
+        }
+        let mut inner: Vec<AnyView> = Vec::new();
+        for c in word.chars() {
+            let ci = *counter;
+            *counter += 1;
+            inner.push(
+                view! {
+                    <span class="char" style=format!("--ci:{ci}")>
+                        <span class="char__in">{c.to_string()}</span>
+                    </span>
+                }
+                .into_any(),
+            );
+        }
+        out.push(view! { <span class="word">{inner}</span> }.into_any());
+    }
+}
+
 #[component]
 pub fn Hero() -> impl IntoView {
-    // The popover below contains the only `.LI-profile-badge` div on the page —
-    // the footer's linkedin card is a plain anchor with a static logo. So we
-    // load the script exactly once, when this component mounts.
+    let name_ref = NodeRef::<leptos::html::H1>::new();
+    let field_ref = NodeRef::<leptos::html::Canvas>::new();
+
+    // load the LinkedIn badge widget once on mount
     Effect::new(move |_| {
         load_linkedin_badge_script();
     });
 
+    // wire the per-glyph magnetic/idle physics once the <h1> is in the DOM
+    Effect::new(move |_| {
+        if let Some(el) = name_ref.get() {
+            wire_kinetic_name(el.unchecked_into());
+        }
+    });
+
+    // start the warm particle field on the backdrop canvas
+    Effect::new(move |_| {
+        if let Some(c) = field_ref.get() {
+            start_hero_field(c.unchecked_into());
+        }
+    });
+
     view! {
         <section class="hero" id="top">
-            <p class="hero__meta">"AI Engineer · Chicago"</p>
+            <canvas class="hero__field" node_ref=field_ref aria-hidden="true"></canvas>
 
-            <h1 class="hero__name" tabindex="0">
-                "syed shabeeb "
-                <span class="surname">"nibras"</span>
+            <p class="hero__meta">
+                <span class="hero__meta-shimmer">"AI Engineer"</span>
+                " · Chicago"
+            </p>
 
-                // Hover popover with the LinkedIn badge widget — large vertical
-                // dark variant. LinkedIn's profile.js (loaded above) finds this
-                // div and injects the rendered badge iframe in its place.
+            <h1 class="hero__name" tabindex="0" node_ref=name_ref>
+                {
+                    let mut counter = 0usize;
+                    let mut first: Vec<AnyView> = Vec::new();
+                    push_words(&mut first, "syed shabeeb ", &mut counter);
+                    let mut sur: Vec<AnyView> = Vec::new();
+                    push_words(&mut sur, "nibras", &mut counter);
+                    view! {
+                        {first}
+                        <span class="surname">{sur}</span>
+                    }
+                }
+
+                // hover popover with the LinkedIn badge widget
                 <span class="name-popover" aria-hidden="true">
                     <span class="name-popover__hint">"linkedin ↓"</span>
                     <div
@@ -67,7 +125,7 @@ pub fn Hero() -> impl IntoView {
             </p>
 
             <p class="hero__lede--sub">
-                "MS Computer Science Graduate · Prior Salesforce Dev @wipro"
+                "MS Computer Science, DePaul · ex-Salesforce Developer @ Wipro · published ML researcher"
             </p>
 
             <div class="hero__cta">

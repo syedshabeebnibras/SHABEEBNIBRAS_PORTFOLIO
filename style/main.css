@@ -157,6 +157,66 @@ main.root {
 .hero__name:hover .surname,
 .hero__name:focus-visible .surname { color: #b06641; }
 
+/* ── kinetic typography ─────────────────────────────────────────────────
+   entrance lives on the .char wrapper (CSS keyframe, staggered by --ci);
+   continuous cursor physics is applied to .char__in by the Rust rAF loop,
+   so the two transform layers compose instead of fighting. */
+.hero__name .word { display: inline-block; white-space: nowrap; }
+.char--space { display: inline; white-space: normal; }
+.char { display: inline-block; }
+.char__in {
+  display: inline-block;
+  will-change: transform;
+  /* glow halo intensifies as the Rust loop raises --glow toward 1 near the cursor */
+  text-shadow: 0 0 calc(var(--glow, 0) * 26px)
+    color-mix(in oklab, var(--accent), transparent 20%);
+}
+.hero__name .char {
+  opacity: 0;
+  transform: translateY(0.5em) rotate(2deg);
+  filter: blur(7px);
+  animation: glyph-in 0.7s var(--spring) both;
+  animation-delay: calc(var(--ci, 0) * 42ms + 0.15s);
+}
+@keyframes glyph-in {
+  to { opacity: 1; transform: translateY(0) rotate(0deg); filter: blur(0); }
+}
+
+/* shimmering accent on the headline role */
+.hero__meta-shimmer {
+  background: linear-gradient(
+    100deg,
+    var(--accent) 0%,
+    var(--accent-amber) 28%,
+    var(--accent) 52%,
+    var(--accent-sage) 78%,
+    var(--accent) 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: shimmer 7s linear infinite;
+}
+@keyframes shimmer {
+  to { background-position: -250% 0; }
+}
+
+/* warm particle field — drawn on a 2D canvas by the Rust physics loop */
+.hero__field {
+  position: absolute;
+  inset: -12% -6% auto -6%;
+  width: 112%;
+  height: 135%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  -webkit-mask-image: radial-gradient(120% 95% at 32% 28%, #000 25%, transparent 78%);
+  mask-image: radial-gradient(120% 95% at 32% 28%, #000 25%, transparent 78%);
+}
+.hero > *:not(.hero__field) { position: relative; z-index: 1; }
+
 /* ── linkedin popover (clickable card with a clean LinkedIn logo) ────── */
 .name-popover {
   position: absolute;
@@ -679,13 +739,34 @@ main.root {
 }
 .chip--primary:hover .chip__star { color: var(--bg-0); }
 
-/* respect users who turn off motion — skip the entrance, hover is fine */
+/* inner wrapper the Rust spring loop transforms — nests under .chip so the
+   magnetic drift composes with the chip's own entrance + hover transforms */
+.chip__mag {
+  display: inline-flex;
+  align-items: center;
+  will-change: transform;
+}
+
+/* respect users who turn off motion — skip entrances + physics, hover is fine */
 @media (prefers-reduced-motion: reduce) {
   .chip {
     opacity: 1;
     transform: none;
     animation: none !important;
   }
+  .chip__mag { transform: none !important; }
+  .hero__name .char {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    animation: none !important;
+  }
+  .hero__meta-shimmer {
+    animation: none;
+    -webkit-text-fill-color: var(--accent);
+    color: var(--accent);
+  }
+  .hero__field { display: none; }
 }
 
 /* -------------------------------------------------------------------------

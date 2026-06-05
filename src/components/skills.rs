@@ -1,6 +1,7 @@
 use leptos::prelude::*;
 use wasm_bindgen::JsCast;
 
+use crate::components::motion::wire_magnetic_chips;
 use crate::components::reveal::observe_reveal;
 use crate::skills::all;
 
@@ -12,7 +13,9 @@ pub fn Skills() -> impl IntoView {
     let section_ref = NodeRef::<leptos::html::Div>::new();
     Effect::new(move |_| {
         if let Some(el) = section_ref.get() {
-            observe_reveal(el.unchecked_into());
+            observe_reveal(el.clone().unchecked_into());
+            // spring-follow cursor magnetism on every chip in this container
+            wire_magnetic_chips(el.unchecked_into());
         }
     });
 
@@ -39,8 +42,10 @@ pub fn Skills() -> impl IntoView {
 
             chip_views.push(view! {
                 <span class=class style=format!("--i: {i}")>
-                    {skill.name}
-                    {skill.primary.then(|| view! { <span class="chip__star">" ★"</span> })}
+                    <span class="chip__mag">
+                        {skill.name}
+                        {skill.primary.then(|| view! { <span class="chip__star">" ★"</span> })}
+                    </span>
                 </span>
             });
         }

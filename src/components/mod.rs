@@ -1,4 +1,5 @@
 pub mod status_bar;
+pub mod motion;
 pub mod hero;
 pub mod experience;
 pub mod skills;

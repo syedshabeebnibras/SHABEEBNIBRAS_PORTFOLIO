@@ -216,6 +216,10 @@ main.root {
   mask-image: radial-gradient(120% 95% at 32% 28%, #000 25%, transparent 78%);
 }
 .hero > *:not(.hero__field) { position: relative; z-index: 1; }
+/* the name owns the LinkedIn popover, so its stacking context must sit
+   above the lede + CTA siblings — otherwise the popover renders behind
+   them (they come later in the DOM at the same z-index). */
+.hero > .hero__name { z-index: 6; }
 
 /* ── linkedin popover (clickable card with a clean LinkedIn logo) ────── */
 .name-popover {
@@ -240,14 +244,16 @@ main.root {
   flex-direction: column;
   gap: 0.7rem;
 
-  /* sized for the large-vertical LinkedIn badge (~280×354) plus padding */
-  width: 320px;
+  /* hug the LinkedIn badge iframe so it's never clipped; stay sane on mobile */
+  width: fit-content;
+  min-width: 240px;
   max-width: 92vw;
-  padding: 1rem 1.1rem 1.1rem;
+  padding: 0.9rem 1rem 1rem;
   background: var(--bg-1);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-bright);
   border-radius: 16px;
-  box-shadow: 0 24px 60px -28px rgba(46, 32, 22, 0.25);
+  /* opaque, deep shadow so it reads as a card floating above the lede/CTA */
+  box-shadow: 0 30px 70px -26px rgba(46, 32, 22, 0.45);
   overflow: hidden;
 
   opacity: 0;
@@ -323,6 +329,12 @@ main.root {
   text-decoration: none;
 }
 .name-popover .LI-simple-link::after { content: "↗"; opacity: 0.6; }
+/* once LinkedIn injects the real badge iframe, drop the text fallback so
+   the two don't stack on top of each other */
+.name-popover .LI-profile-badge:has(iframe) .LI-simple-link { display: none; }
+/* the little "linkedin ↓" hint also disappears once the badge is live —
+   the badge speaks for itself */
+.name-popover:has(iframe) .name-popover__hint { display: none; }
 
 @media (hover: hover) and (pointer: fine) {
   .hero__name:hover .name-popover,

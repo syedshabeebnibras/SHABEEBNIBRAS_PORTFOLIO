@@ -1196,3 +1196,60 @@ main.root {
 
 /* show native cursor again (we removed the custom one) */
 body { cursor: auto; }
+
+/* -------------------------------------------------------------------------
+   mobile / phone compatibility
+   ------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  /* every multi-column grid collapses to a single column. the minmax()
+     mins (320/340/280px) would otherwise overflow a ~320px viewport. */
+  .grid,
+  .exp-grid,
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* status bar: the centered name doesn't fit three-up — drop it */
+  .statusbar {
+    grid-template-columns: 1fr auto;
+    padding: 0.6rem var(--gutter);
+    font-size: 10px;
+    letter-spacing: 0.03em;
+  }
+  .statusbar__cell--mid { display: none; }
+
+  /* hero: tighten top space + keep the wordmark from overflowing tiny screens */
+  .hero { padding-top: clamp(3rem, 11vh, 5.5rem); gap: 1.3rem; }
+  .hero__name { font-size: clamp(1.95rem, 11.5vw, 3.4rem); }
+  .hero__meta { font-size: clamp(1.1rem, 5.6vw, 1.5rem); }
+  .hero__cta { gap: 0.55rem; }
+  .hero__cta .btn { padding: 0.7rem 1.15rem; font-size: 13px; }
+
+  /* section headings + spacing breathe less on small screens */
+  .section { padding: clamp(3.5rem, 9vh, 6rem) 0; }
+  .section__head { margin-bottom: 2.25rem; }
+
+  /* upcoming timeline: stack the date over the content, drop the rail */
+  .lane {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+    padding: 1.6rem 0;
+  }
+  .lane__rail { display: none; }
+  .lane__when { padding-top: 0; }
+
+  /* trim interior padding so cards don't feel cramped edge-to-edge */
+  .card__body { padding: 1.3rem 1.3rem 1.4rem; }
+  .exp-card__inner { padding: 1.3rem 1.3rem 1.4rem; }
+  .contact-card { padding: 1.5rem; }
+  .contact-card--hero { min-height: 220px; }
+
+  /* the LinkedIn hover popover is already hidden on touch (hover:none);
+     nothing extra needed here. */
+}
+
+/* very small phones (≤380px) — one more notch down on the wordmark */
+@media (max-width: 380px) {
+  .hero__name { font-size: clamp(1.7rem, 12vw, 2.4rem); }
+  .root { padding-bottom: 5rem; }
+}

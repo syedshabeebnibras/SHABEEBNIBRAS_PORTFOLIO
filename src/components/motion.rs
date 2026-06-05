@@ -51,6 +51,26 @@ pub fn reduced_motion() -> bool {
         .unwrap_or(false)
 }
 
+/// True only on devices with a precise hover-capable pointer (a mouse/trackpad).
+/// Phones and tablets report a coarse pointer with no hover — there's no cursor
+/// to drive the magnet/tilt loops, so we skip them entirely to save battery.
+pub fn pointer_is_fine() -> bool {
+    web_sys::window()
+        .and_then(|w| {
+            w.match_media("(hover: hover) and (pointer: fine)")
+                .ok()
+                .flatten()
+        })
+        .map(|m| m.matches())
+        .unwrap_or(true) // assume desktop when the query is unsupported
+}
+
+/// Combined guard used by every interactive physics loop: skip if the user
+/// prefers reduced motion OR there's no fine pointer (i.e. touch device).
+fn skip_physics() -> bool {
+    reduced_motion() || !pointer_is_fine()
+}
+
 fn now_seconds() -> f64 {
     web_sys::window()
         .and_then(|w| w.performance())
@@ -83,7 +103,7 @@ fn collect(root: &Element, selector: &str) -> Vec<HtmlElement> {
 // pull toward the cursor that ramps in over a radius. A `--glow` custom
 // property (0..1) drives a CSS text-shadow halo near the cursor.
 pub fn wire_kinetic_name(root: Element) {
-    if reduced_motion() {
+    if skip_physics() {
         return;
     }
     let chars = Rc::new(collect(&root, ".char__in"));
@@ -167,7 +187,7 @@ fn apply_plane_tilt(root: &Element, state: &Cell<(f64, f64)>, mx: f64, my: f64) 
 // it's near, and relaxes back to rest otherwise. The integration `cur +=
 // (target - cur) * k` is a cheap critically-damped-ish spring.
 pub fn wire_magnetic_chips(root: Element) {
-    if reduced_motion() {
+    if skip_physics() {
         return;
     }
     let mags = collect(&root, ".chip__mag");
@@ -217,7 +237,7 @@ pub fn wire_magnetic_chips(root: Element) {
 // the Z axis, and exposes `--gx/--gy/--ga` for a cursor-tracking glare. All
 // channels are spring-smoothed so entry/exit glides instead of snapping.
 pub fn wire_tilt_cards(root: Element) {
-    if reduced_motion() {
+    if skip_physics() {
         return;
     }
     let planes = collect(&root, ".card__3d");
@@ -313,7 +333,7 @@ const PALETTE: [&str; 4] = [
 ];
 
 pub fn start_hero_field(canvas: HtmlCanvasElement) {
-    if reduced_motion() {
+    if skip_physics() {
         return;
     }
     let Ok(Some(ctx_obj)) = canvas.get_context("2d") else {

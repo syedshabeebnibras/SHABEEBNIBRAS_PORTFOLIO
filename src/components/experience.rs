@@ -96,25 +96,28 @@ pub fn Experience() -> impl IntoView {
                 <p class="section__sub">"four roles across teaching, data, dev, and security — most recent first."</p>
             </header>
 
-            <div class="exp-list" node_ref=list_ref>
+            <div class="exp-grid" node_ref=list_ref>
                 {items.into_iter().enumerate().map(|(i, r)| {
                     view! {
-                        <article class="exp" style=format!("--index: {i}")>
-                            <header class="exp__head">
-                                <span class="exp__when">{r.period}</span>
-                                <span class="exp__loc">{r.location}</span>
-                            </header>
-                            <div class="exp__body">
-                                <h3 class="exp__role">{r.role}</h3>
-                                <p class="exp__org">{r.company}</p>
-                                <p class="exp__summary">{r.summary}</p>
-                                <ul class="exp__bullets">
+                        <article class="exp-card" style=format!("--index: {i}")>
+                          <div class="card__3d">
+                            <div class="card__glare" aria-hidden="true"></div>
+                            <div class="exp-card__inner">
+                                <header class="exp-card__top">
+                                    <span class="exp-card__when">{r.period}</span>
+                                    <span class="exp-card__loc">{r.location}</span>
+                                </header>
+                                <h3 class="exp-card__role">{r.role}</h3>
+                                <p class="exp-card__org">{r.company}</p>
+                                <p class="exp-card__summary">{r.summary}</p>
+                                <ul class="exp-card__bullets">
                                     {r.bullets.iter().map(|b| view! { <li>{*b}</li> }).collect::<Vec<_>>()}
                                 </ul>
-                                <ul class="card__stack exp__tools" aria-label="tools">
+                                <ul class="card__stack exp-card__tools" aria-label="tools">
                                     {r.tools.iter().map(|t| view! { <li>{*t}</li> }).collect::<Vec<_>>()}
                                 </ul>
                             </div>
+                          </div>
                         </article>
                     }
                 }).collect::<Vec<_>>()}
